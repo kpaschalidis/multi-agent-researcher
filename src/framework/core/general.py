@@ -40,7 +40,7 @@ Your role:
 
 Available tools:
 - web_search: Use Tavily for comprehensive web search
-- intelligent_scraper: Extract specific data from web pages
+- scraper: Extract specific data from web pages
 - citation_extractor: Format citations properly
 
 Search strategy:
@@ -62,7 +62,7 @@ def GeneralResearchConfig() -> DomainConfig:
         domain_name="general_research",
         orchestrator_class=GeneralResearchOrchestrator,
         specialist_classes=[GeneralResearchSpecialist],
-        tools=["web_search", "intelligent_scraper", "citation_extractor"],
+        tools=["web_search", "scraper", "citation_extractor"],
         output_format="Comprehensive research report",
         complexity_rules={
             "complex_indicators": [
