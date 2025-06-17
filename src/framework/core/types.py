@@ -26,6 +26,22 @@ class ResearchState(TypedDict):
     errors: List[str]
     logger: "AgentLogger"
     reasoning_history: List["ReasoningChain"]
+    initial_research: str = ""
+    research_outline: Dict[str, Any] = None
+    quality_guidelines: List[str] = None
+    review_feedback: List[str] = None
+    revision_history: List[Dict] = None
+    quality_score: float = 0.0
+    needs_revision: bool = False
+    publication_formats: List[str] = None
+
+    def __post_init__(self):
+        if self.review_feedback is None:
+            self.review_feedback = []
+        if self.revision_history is None:
+            self.revision_history = []
+        if self.publication_formats is None:
+            self.publication_formats = ["markdown"]
 
 
 @dataclass

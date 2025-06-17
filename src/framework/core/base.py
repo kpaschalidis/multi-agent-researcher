@@ -1,5 +1,6 @@
 import json
 import json5
+import re
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 from datetime import datetime
@@ -394,39 +395,36 @@ class BaseSpecialistAgent(ABC):
                 )
 
         # Scraping
-        if (
-            "intelligent_scraper" in task.tools_to_use
-            and "intelligent_scraper" in self.tools
-        ):
-            import re
+        if "scraper" in task.tools_to_use and "scraper" in self.tools:
 
             urls_found = []
             for finding in findings:
                 urls = re.findall(r"Source: (https?://[^\s]+)", finding)
-                urls_found.extend(urls[:2])
+                urls_found.extend(urls[:5])
 
             self.logger.log(
                 LogLevel.AGENT,
                 self.agent_id,
                 "scraping_planning",
                 f"Found {len(urls_found)} URLs to scrape",
-                data={"urls": urls_found[:3]},
+                data={"urls": urls_found[:5]},
             )
 
-            for url in urls_found[:3]:
-                scrape_prompt = f"Extract key information relevant to: {task.objective}"
+            for url in urls_found[:5]:
+                scrape_prompt = f"""Extract comprehensive information relevant to: {task.objective}
+
+                    Provide detailed, substantive content with specific facts and examples.
+                    """
 
                 self.logger.log(
                     LogLevel.TOOL,
                     self.agent_id,
                     "tool_call",
                     f"Scraping URL: {url[:50]}...",
-                    data={"tool": "intelligent_scraper", "url": url},
+                    data={"tool": "scraper", "url": url},
                 )
 
-                scrape_result = self.tools["intelligent_scraper"]._run(
-                    url, scrape_prompt
-                )
+                scrape_result = await self.tools["scraper"]._arun(url, scrape_prompt)
                 findings.append(scrape_result)
                 sources.append(f"Scraped content: {url}")
 
@@ -454,20 +452,30 @@ class BaseSpecialistAgent(ABC):
                 ("system", self.system_prompt),
                 (
                     "human",
-                    """Analyze and synthesize these research findings:
+                    """Conduct a comprehensive analysis of these research findings.
 
 Task Objective: {objective}
 Output Format Required: {output_format}
 
-Raw Findings:
+Research Findings:
 {findings}
+
+Create a detailed, comprehensive analysis that includes:
 
 Provide a synthesized response that:
 1. Directly addresses the objective
 2. Highlights key insights
 3. Assesses source quality
 4. Notes any gaps or limitations
-5. Follows the requested output format""",
+
+REQUIREMENTS:
+- Include specific examples and case studies
+- Cite quantitative data when available
+- Use clear subheadings for organization
+- Maintain academic rigor and depth
+- Ensure all claims are supported by evidence from the research
+
+Focus on providing substantial, detailed content that demonstrates deep understanding of the topic.""",
                 ),
             ]
         )
@@ -478,7 +486,12 @@ Provide a synthesized response that:
             findings=all_findings,
         )
 
-        synthesis_response = await self.llm.ainvoke(synthesis_messages)
+        synthesis_response = await self.llm.ainvoke(
+            synthesis_messages,
+            max_tokens=4000,
+            temperature=0.3,
+        )
+
         confidence = 0.8  # TODO: Should be calculated based on source quality
 
         self.logger.log(
