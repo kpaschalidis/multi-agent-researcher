@@ -41,7 +41,7 @@ async def demo_logging_system():
     print("-" * 40)
 
     try:
-        result = await research_system.research(QUERY)
+        result = await research_system.research(QUERY, publication_formats=["markdown"])
 
         # Results
         print("\n" + "=" * 60)
