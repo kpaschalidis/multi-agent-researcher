@@ -35,9 +35,6 @@ class WorkflowPrompts:
 class ResearchConfig:
     """Complete configuration for a ResearchWorkflow execution"""
 
-
-@dataclass
-class ResearchConfig:
     domain_name: str
     complexity_rules: Dict[str, Any]
     data_sources: List[str]
