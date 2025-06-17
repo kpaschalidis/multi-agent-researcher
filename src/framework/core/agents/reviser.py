@@ -7,26 +7,15 @@ from ..logging import LogLevel
 class ReviserAgent(ResearchAgent):
     """Research refinement and improvement agent"""
 
-    def _build_system_prompt(self) -> str:
-        return """You are a Research Reviser Agent responsible for improving research quality.
-
-Your role:
-1. Address reviewer feedback systematically
-2. Fill identified research gaps
-3. Improve source quality and credibility
-4. Enhance clarity and completeness
-5. Ensure research meets quality standards
-
-Focus on:
-- Targeted improvements based on feedback
-- Additional research where needed
-- Source verification and enhancement
-- Structural and content improvements"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.system_prompt = self.research_config.workflow_prompts.reviser
 
     async def revise_research(
         self, research_data: List[Dict], feedback: List[Dict]
     ) -> List[Dict]:
         """Revise research based on reviewer feedback"""
+
         self.logger.log(
             LogLevel.AGENT,
             self.agent_id,

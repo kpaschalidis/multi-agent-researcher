@@ -10,21 +10,9 @@ from ..types import TaskComplexity
 class EditorAgent(ResearchLead):
     """Research planning and coordination agent"""
 
-    def _build_system_prompt(self) -> str:
-        return """You are a Research Editor Agent responsible for planning and structuring research.
-
-Your responsibilities:
-1. Analyze initial research to understand scope
-2. Create detailed research outlines with clear sections
-3. Plan parallel research tasks for optimal coverage
-4. Define quality guidelines for the research
-5. Coordinate the overall research workflow
-
-Focus on:
-- Creating comprehensive research plans
-- Ensuring logical flow and coverage
-- Optimizing parallel research efficiency
-- Setting quality standards and guidelines"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.system_prompt = self.research_config.workflow_prompts.editor
 
     async def plan_research_outline(
         self, query: str, initial_research: str, existing_complexity: str = None

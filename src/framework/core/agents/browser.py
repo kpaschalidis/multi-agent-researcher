@@ -1,3 +1,5 @@
+from langchain_core.prompts import ChatPromptTemplate
+
 from ..logging import LogLevel
 from ..base import ResearchAgent
 
@@ -5,20 +7,9 @@ from ..base import ResearchAgent
 class BrowserAgent(ResearchAgent):
     """Initial research and topic exploration agent"""
 
-    def _build_system_prompt(self) -> str:
-        return """You are a Research Browser Agent responsible for initial topic exploration.
-
-Your role:
-1. Conduct preliminary research to understand the topic scope
-2. Identify key themes and areas for deeper investigation
-3. Provide context for research planning
-4. Use broad searches to map the research landscape
-
-Focus on:
-- Getting a comprehensive overview of the topic
-- Identifying authoritative sources
-- Understanding current developments and trends
-- Noting potential research angles and subtopics"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.system_prompt = self.research_config.workflow_prompts.browser
 
     async def conduct_initial_research(self, query: str) -> str:
         """Conduct initial research to understand topic scope"""
@@ -43,8 +34,6 @@ Focus on:
             
             Search Results: {search_results}
             """
-
-            from langchain_core.prompts import ChatPromptTemplate
 
             prompt = ChatPromptTemplate.from_messages(
                 [("system", self.system_prompt), ("human", synthesis_prompt)]

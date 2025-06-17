@@ -7,22 +7,9 @@ from ..logging import LogLevel
 class PublisherAgent(ResearchAgent):
     """Publication formatting and export agent"""
 
-    def _build_system_prompt(self) -> str:
-        return """You are a Research Publisher Agent responsible for final publication formatting.
-
-Your role:
-1. Format reports for multiple output types
-2. Ensure proper citation formatting
-3. Create publication metadata
-4. Handle export and distribution
-5. Maintain formatting standards
-
-Focus on:
-- Professional formatting standards
-- Multiple format compatibility
-- Proper citation styles
-- Metadata completeness
-- Publication readiness"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.system_prompt = self.research_config.workflow_prompts.publisher
 
     async def publish_report(
         self, report_content: str, citations: List[Dict], formats: List[str]

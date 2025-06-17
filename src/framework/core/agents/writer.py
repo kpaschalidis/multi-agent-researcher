@@ -7,22 +7,9 @@ from ..logging import LogLevel
 class WriterAgent(ResearchAgent):
     """Report compilation and writing agent"""
 
-    def _build_system_prompt(self) -> str:
-        return """You are a Research Writer Agent responsible for creating publication-ready reports.
-
-Your role:
-1. Synthesize research findings into coherent reports
-2. Create professional document structure
-3. Ensure proper flow and readability
-4. Integrate citations and references
-5. Format for multiple output types
-
-Focus on:
-- Clear, engaging writing style
-- Logical organization and flow
-- Professional formatting
-- Comprehensive coverage
-- Publication standards"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.system_prompt = self.research_config.workflow_prompts.writer
 
     async def compile_final_report(
         self, query: str, research_data: List[Dict], outline: Dict

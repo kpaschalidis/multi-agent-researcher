@@ -9,31 +9,9 @@ import json5
 class ReviewerAgent(ResearchAgent):
     """Quality assurance and validation agent"""
 
-    def _build_system_prompt(self) -> str:
-        return """You are an Expert Research Quality Reviewer with advanced evaluation capabilities.
-
-Your role:
-1. Evaluate research quality using multiple criteria
-2. Provide specific, actionable feedback
-3. Track improvements through revision cycles
-4. Generate nuanced quality scores (0.0-1.0)
-
-Evaluation Criteria:
-- Content Depth (0-20 points): Comprehensiveness and detail level
-- Source Quality (0-20 points): Credibility and authority of sources  
-- Accuracy (0-20 points): Factual correctness and verification
-- Coverage (0-20 points): How well the research addresses the query
-- Clarity (0-20 points): Organization, flow, and readability
-
-Scoring Guidelines:
-- 0.9-1.0: Exceptional quality, publication-ready
-- 0.8-0.89: High quality, minor improvements needed
-- 0.7-0.79: Good quality, moderate improvements needed
-- 0.6-0.69: Acceptable quality, significant improvements needed
-- 0.5-0.59: Poor quality, major revisions required
-- Below 0.5: Unacceptable quality, fundamental issues
-
-Be precise and constructive in your feedback."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.system_prompt = self.research_config.workflow_prompts.reviewer
 
     async def review_research(
         self,
