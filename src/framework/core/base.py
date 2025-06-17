@@ -17,12 +17,16 @@ class BaseOrchestratorAgent(ABC):
     """Base class for orchestrator agents that manage research workflows"""
 
     def __init__(
-        self, llm: ChatOpenAI, domain_config: DomainConfig, logger: AgentLogger = None
+        self,
+        llm: ChatOpenAI,
+        domain_config: DomainConfig,
+        agent_id: str = None,
+        logger: AgentLogger = None,
     ):
         self.llm = llm
         self.domain_config = domain_config
         self.logger = logger or AgentLogger()
-        self.agent_id = f"orchestrator_{id(self)}"
+        self.agent_id = agent_id or f"orchestrator_{id(self)}"
         self.system_prompt = self._build_system_prompt()
 
     @abstractmethod
@@ -159,28 +163,17 @@ Create a research plan with exactly {num_subagents} subtasks. Provide your analy
             tools=self.domain_config.tools,
         )
 
-        response = await self.llm.ainvoke(messages)
-        self.logger.log(
-            LogLevel.DEBUG,
-            self.agent_id,
-            "llm_raw_response",
-            f"LLM response: {response.content}",
-        )
         try:
+            response = await self.llm.ainvoke(messages)
             raw = response.content.strip()
+
             if raw.startswith("```"):
                 raw = raw.replace("```json", "").replace("```", "").strip()
             result = json5.loads(raw)
 
-            self.logger.log(
-                LogLevel.DEBUG,
-                self.agent_id,
-                "llm_parsed_response",
-                f"Parsed response: {result}",
-            )
-
             result["complexity"] = complexity.value
             result["num_subagents"] = config["num_subagents"]
+
             return result
         except json.JSONDecodeError:
             self.logger.log(
