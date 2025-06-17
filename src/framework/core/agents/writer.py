@@ -1,10 +1,10 @@
 from typing import Dict, List
 from langchain_core.prompts import ChatPromptTemplate
-from ..base import BaseSpecialistAgent
+from ..base import ResearchAgent
 from ..logging import LogLevel
 
 
-class WriterAgent(BaseSpecialistAgent):
+class WriterAgent(ResearchAgent):
     """Report compilation and writing agent"""
 
     def _build_system_prompt(self) -> str:

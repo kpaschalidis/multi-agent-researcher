@@ -1,10 +1,10 @@
 from datetime import datetime
 from typing import Any, Dict, List
-from ..base import BaseSpecialistAgent
+from ..base import ResearchAgent
 from ..logging import LogLevel
 
 
-class PublisherAgent(BaseSpecialistAgent):
+class PublisherAgent(ResearchAgent):
     """Publication formatting and export agent"""
 
     def _build_system_prompt(self) -> str:

@@ -2,12 +2,12 @@ from typing import Any, Dict
 from langchain_core.prompts import ChatPromptTemplate
 import json5
 
-from ..base import BaseOrchestratorAgent
+from ..base import ResearchLead
 from ..logging import LogLevel
 from ..types import TaskComplexity
 
 
-class EditorAgent(BaseOrchestratorAgent):
+class EditorAgent(ResearchLead):
     """Research planning and coordination agent"""
 
     def _build_system_prompt(self) -> str:

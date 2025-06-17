@@ -1,12 +1,12 @@
-from .base import BaseOrchestratorAgent, BaseSpecialistAgent
+from .base import ResearchLead, ResearchAgent
 from .types import ResearchState, TaskComplexity, SubagentTask, DomainConfig
 from .logging import AgentLogger, LogLevel, LogEntry, ReasoningChain
 
 __all__ = [
-    "BaseOrchestratorAgent",
-    "BaseSpecialistAgent",
-    "GeneralResearchOrchestrator",
-    "GeneralResearchSpecialist",
+    "ResearchLead",
+    "ResearchAgent",
+    "GeneralResearchLead",
+    "GeneralResearchAgent",
     "GeneralResearchConfig",
     "ResearchState",
     "TaskComplexity",

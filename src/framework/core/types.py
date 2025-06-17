@@ -64,8 +64,8 @@ class DomainConfig:
     """Configuration for domain-specific research"""
 
     domain_name: str
-    orchestrator_class: type
-    specialist_classes: List[type]
+    research_lead_class: type
+    research_agent_classes: List[type]
     tools: List[str]
     output_format: str
     complexity_rules: Dict[str, Any]
@@ -75,8 +75,8 @@ class DomainConfig:
         """Validate the domain configuration"""
         required_fields = [
             "domain_name",
-            "orchestrator_class",
-            "specialist_classes",
+            "research_lead_class",
+            "research_lead_class",
             "tools",
             "output_format",
             "complexity_rules",
@@ -86,7 +86,7 @@ class DomainConfig:
             if not getattr(self, field_name):
                 raise ValueError(f"Missing required field: {field_name}")
 
-        if not self.specialist_classes:
+        if not self.research_agent_classes:
             raise ValueError("At least one specialist class must be provided")
 
         if not self.tools:

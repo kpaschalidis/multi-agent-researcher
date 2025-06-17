@@ -1,14 +1,14 @@
 from .core.types import TaskComplexity, SubagentTask, DomainConfig, ResearchState
 from .core.logging import AgentLogger, LogLevel, LogEntry, ReasoningChain
 from .core.constants import COMPLEXITY_INDICATORS, ALL_COMPLEXITY_VALUES, AGENT_CONFIGS
-from .core.base import BaseOrchestratorAgent, BaseSpecialistAgent
+from .core.base import ResearchLead, ResearchAgent
 from .tools import TavilyWebSearchTool, CitationTool
 from .core.general import (
     GeneralResearchConfig,
-    GeneralResearchOrchestrator,
-    GeneralResearchSpecialist,
+    GeneralResearchLead,
+    GeneralResearchAgent,
 )
-from .orchestrator import MultiAgentResearchOrchestrator
+from .research_workflow import ResearchWorkflow
 
 __all__ = [
     "TaskComplexity",
@@ -22,24 +22,24 @@ __all__ = [
     "COMPLEXITY_INDICATORS",
     "ALL_COMPLEXITY_VALUES",
     "AGENT_CONFIGS",
-    "MultiAgentResearchOrchestrator",
-    "BaseOrchestratorAgent",
-    "BaseSpecialistAgent",
+    "ResearchWorkflow",
+    "ResearchLead",
+    "ResearchAgent",
     "GeneralResearchConfig",
-    "GeneralResearchOrchestrator",
-    "GeneralResearchSpecialist",
+    "GeneralResearchLead",
+    "GeneralResearchAgent",
     "TavilyWebSearchTool",
     "CitationTool",
-    "create_general_research_system",
+    "create_general_research_workflow",
 ]
 
 
-def create_general_research_system(
+def create_general_research_workflow(
     llm, tavily_api_key, verbose_logging=True, log_file=None
 ):
     """Quick setup function for general research"""
     config = GeneralResearchConfig()
-    return MultiAgentResearchOrchestrator(
+    return ResearchWorkflow(
         llm=llm,
         domain_config=config,
         tavily_api_key=tavily_api_key,

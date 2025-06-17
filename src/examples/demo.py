@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from src.framework import create_general_research_system
+from src.framework import create_general_research_workflow
 
 
 load_dotenv()
@@ -28,7 +28,7 @@ async def demo_logging_system():
         print("⚠️  Warning: TAVILY_API_KEY not found. Some features may not work.")
         return
 
-    research_system = create_general_research_system(
+    research_system = create_general_research_workflow(
         llm=llm,
         tavily_api_key=tavily_api_key,
         verbose_logging=True,

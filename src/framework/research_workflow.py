@@ -24,7 +24,7 @@ from .core.types import ResearchState, DomainConfig, SubagentTask
 from .tools import TavilyWebSearchTool, CitationTool, HybridScrapingTool
 
 
-class MultiAgentResearchOrchestrator:
+class ResearchWorkflow:
     """Generic framework for any research domain"""
 
     def __init__(
@@ -40,8 +40,8 @@ class MultiAgentResearchOrchestrator:
         self.domain_config.validate()
         self.logger = AgentLogger(verbose=verbose_logging, log_file=log_file)
         self.tools = self._create_tools(tavily_api_key)
-        self.orchestrator = domain_config.orchestrator_class(
-            llm, domain_config, "orchestrator_agent", self.logger
+        self.research_lead = domain_config.research_lead_class(
+            llm, domain_config, "research_lead", self.logger
         )
 
         self.workflow_agents = self._create_workflow_agents()
@@ -287,7 +287,7 @@ class MultiAgentResearchOrchestrator:
     async def _editor_node(self, state: ResearchState) -> ResearchState:
         """Research planning and task creation"""
         try:
-            complexity = self.orchestrator.determine_complexity(state["query"])
+            complexity = self.research_lead.determine_complexity(state["query"])
 
             outline_result = await self.workflow_agents["editor"].plan_research_outline(
                 state["query"],
@@ -302,12 +302,12 @@ class MultiAgentResearchOrchestrator:
                 )
 
                 # Create subagent tasks based on outline
-                analysis = await self.orchestrator.analyze_query(state["query"])
+                analysis = await self.research_lead.analyze_query(state["query"])
                 state["research_plan"] = analysis["research_plan"]
                 state["subagent_tasks"] = analysis["subtasks"]
             else:
                 # Fallback to existing analysis
-                analysis = await self.orchestrator.analyze_query(state["query"])
+                analysis = await self.research_lead.analyze_query(state["query"])
                 state["research_plan"] = analysis["research_plan"]
                 state["subagent_tasks"] = analysis["subtasks"]
                 state["quality_guidelines"] = [
@@ -326,7 +326,7 @@ class MultiAgentResearchOrchestrator:
                 f"Research planning failed: {str(e)}",
             )
             # Fallback to basic analysis
-            analysis = await self.orchestrator.analyze_query(state["query"])
+            analysis = await self.research_lead.analyze_query(state["query"])
             state["research_plan"] = analysis["research_plan"]
             state["subagent_tasks"] = analysis["subtasks"]
             state["quality_guidelines"] = ["Basic quality standards"]
@@ -344,28 +344,28 @@ class MultiAgentResearchOrchestrator:
         if not state.get("subagent_tasks"):
             print("❌ No subagent tasks found! Running analysis...")
             # Generate tasks using orchestrator
-            analysis = await self.orchestrator.analyze_query(state["query"])
+            analysis = await self.research_lead.analyze_query(state["query"])
             state["research_plan"] = analysis["research_plan"]
             state["subagent_tasks"] = analysis["subtasks"]
             print(f"✅ Generated {len(state['subagent_tasks'])} subagent tasks")
 
-        # Check domain config and specialist classes
-        if not self.domain_config.specialist_classes:
-            print("❌ No specialist classes configured!")
-            state["errors"].append("No specialist classes available")
+        # Check domain config and agent classes
+        if not self.domain_config.research_agent_classes:
+            print("❌ No research agent classes configured!")
+            state["errors"].append("No research agent classes available")
             state["subagent_results"] = []
             return state
 
-        print(f"✅ Using specialist class: {self.domain_config.specialist_classes[0]}")
+        print(f"✅ Using agent class: {self.domain_config.research_agent_classes[0]}")
 
         agents = []
         for task_data in state["subagent_tasks"]:
-            specialist_class = self.domain_config.specialist_classes[0]
-            agent_id = f"specialist_{task_data['id']}"
-            specialist = specialist_class(
+            agent_class = self.domain_config.research_agent_classes[0]
+            agent_id = f"agent_{task_data['id']}"
+            agent = agent_class(
                 self.llm, self.tools, self.domain_config, agent_id, self.logger
             )
-            agents.append(specialist)
+            agents.append(agent)
 
         async def execute_single_task(task_data, agent):
             task = SubagentTask(
@@ -642,7 +642,7 @@ class MultiAgentResearchOrchestrator:
 
     async def _synthesize_results_node(self, state: ResearchState) -> ResearchState:
         """Synthesize results into final report"""
-        final_report = await self.orchestrator.synthesize_results(
+        final_report = await self.research_lead.synthesize_results(
             state["query"], state["subagent_results"]
         )
         state["final_report"] = final_report

@@ -1,8 +1,8 @@
-from .base import BaseOrchestratorAgent, BaseSpecialistAgent
+from .base import ResearchLead, ResearchAgent
 from .types import DomainConfig
 
 
-class GeneralResearchOrchestrator(BaseOrchestratorAgent):
+class GeneralResearchLead(ResearchLead):
     """General research orchestrator for broad research topics"""
 
     def _build_system_prompt(self) -> str:
@@ -25,8 +25,8 @@ Key principles:
 Remember: Each subagent has limited context, so be explicit in your instructions."""
 
 
-class GeneralResearchSpecialist(BaseSpecialistAgent):
-    """General research specialist agent for executing research tasks"""
+class GeneralResearchAgent(ResearchAgent):
+    """General research agent for executing research tasks"""
 
     def _build_system_prompt(self) -> str:
         return """You are a specialized Research Subagent focused on a specific research task.
@@ -60,8 +60,8 @@ def GeneralResearchConfig() -> DomainConfig:
     """Create configuration for general research domain"""
     return DomainConfig(
         domain_name="general_research",
-        orchestrator_class=GeneralResearchOrchestrator,
-        specialist_classes=[GeneralResearchSpecialist],
+        research_lead_class=GeneralResearchLead,
+        research_agent_classes=[GeneralResearchAgent],
         tools=["web_search", "scraper", "citation_extractor"],
         output_format="Comprehensive research report",
         complexity_rules={

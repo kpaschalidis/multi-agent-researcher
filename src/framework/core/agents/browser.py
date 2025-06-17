@@ -1,8 +1,8 @@
 from ..logging import LogLevel
-from ..base import BaseSpecialistAgent
+from ..base import ResearchAgent
 
 
-class BrowserAgent(BaseSpecialistAgent):
+class BrowserAgent(ResearchAgent):
     """Initial research and topic exploration agent"""
 
     def _build_system_prompt(self) -> str:

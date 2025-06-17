@@ -1,12 +1,12 @@
 from typing import Any, Dict, List
-from ..base import BaseSpecialistAgent
+from ..base import ResearchAgent
 from ..logging import LogLevel
 from langchain_core.prompts import ChatPromptTemplate
 import json5
 
 
 # TODO: Needs to be improved
-class ReviewerAgent(BaseSpecialistAgent):
+class ReviewerAgent(ResearchAgent):
     """Quality assurance and validation agent"""
 
     def _build_system_prompt(self) -> str:

@@ -14,7 +14,7 @@ from .logging import AgentLogger, LogLevel, ReasoningChain
 from .constants import COMPLEXITY_INDICATORS, ALL_COMPLEXITY_VALUES, AGENT_CONFIGS
 
 
-class BaseOrchestratorAgent(ABC):
+class ResearchLead(ABC):
     """Base class for orchestrator agents that manage research workflows"""
 
     def __init__(
@@ -313,8 +313,8 @@ Format as a professional research report with clear sections.""",
         return response.content
 
 
-class BaseSpecialistAgent(ABC):
-    """Base class for domain-specific specialist agents"""
+class ResearchAgent(ABC):
+    """Base class for domain-specific research agents"""
 
     def __init__(
         self,
@@ -327,13 +327,13 @@ class BaseSpecialistAgent(ABC):
         self.llm = llm
         self.tools = {tool.name: tool for tool in tools}
         self.domain_config = domain_config
-        self.agent_id = agent_id or f"specialist_{id(self)}"
+        self.agent_id = agent_id or f"research_agent_{id(self)}"
         self.logger = logger or AgentLogger()
         self.system_prompt = self._build_system_prompt()
 
     @abstractmethod
     def _build_system_prompt(self) -> str:
-        """Build domain-specific system prompt for specialist"""
+        """Build domain-specific system prompt for research agent"""
         pass
 
     async def execute_task(self, task: SubagentTask) -> Dict[str, Any]:

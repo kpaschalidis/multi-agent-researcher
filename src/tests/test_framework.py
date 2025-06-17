@@ -58,8 +58,8 @@ def test_module_structure():
 
         config = DomainConfig(
             domain_name="test",
-            orchestrator_class=str,  # Dummy class
-            specialist_classes=[str],
+            research_lead_class=str,  # Dummy class
+            research_agent_classes=[str],
             tools=["test_tool"],
             output_format="test format",
             complexity_rules={"test": ["test"]},
@@ -80,11 +80,11 @@ def test_conditional_imports():
 
     try:
         # These should fail gracefully
-        from framework import create_general_research_system
+        from framework import create_general_research_workflow
 
         # This should raise an ImportError due to missing dependencies
         try:
-            create_general_research_system(None, None)
+            create_general_research_workflow(None, None)
             print("❌ Expected ImportError was not raised")
             return False
         except ImportError as e:
