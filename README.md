@@ -1,26 +1,17 @@
-# Multi-Agent Research System
-
-⚠️ Prototype
+# Multi-Agent Research Framework 🔬🤖
 
 Research system built with LangGraph and LangChain, inspired by Anthropic's [multi-agent research architecture](https://www.anthropic.com/engineering/built-multi-agent-research-system). The system uses a lead researcher agent to coordinate multiple specialized subagents that work in parallel to gather and synthesize information.
 
 ## Features
 
-- **Orchestrator-Worker Pattern**: Lead agent coordinates specialized subagents for parallel research
-- **Intelligent Tool Selection**: Uses Tavily Search for web search and ScrapeGraph AI for intelligent web scraping
-- **Adaptive Complexity**: Automatically scales the number of agents based on query complexity
-- **Comprehensive Synthesis**: Combines findings from multiple sources into coherent reports
+- **Multi-Agent Coordination**: Intelligent orchestrator spawns specialist agents based on query complexity
+- **Logging**: See what agents think, decide, and do in real-time
+- **Domain Specialization**: Easily extensible for different research domains
+- **Tool Integration**: Web search, scraping, citation management
+- **Synthesis**: Combines findings from multiple sources into coherent reports
 - **Citation Management**: Automatically tracks and formats source citations
 
-## Architecture
-
-```
-User Query → Lead Researcher → Parallel Subagents → Synthesis → Final Report
-                ↓                    ↓
-        Research Planning    [Web Search + Scraping]
-```
-
-## Setup
+## 🛠️ Installation
 
 ### Prerequisites
 
@@ -47,80 +38,88 @@ pip install -r requirements.txt
 OPENAI_API_KEY=your_openai_api_key_here
 TAVILY_API_KEY=your_tavily_api_key_here
 ```
- 
-## Usage
+
+## 🚀 Quick Start
 
 ### Basic Usage
 
 ```python
 import asyncio
-from multi_agent_researcher import MultiAgentResearcher
 from langchain_openai import ChatOpenAI
+from framework import create_general_research_system
 
-async def main():
-    # Initialize the LLM
-    llm = ChatOpenAI(
-        model="gpt-4o",
-        temperature=0.1,
-        api_key=os.getenv("OPENAI_API_KEY")
-    )
-    
-    # Create the research system
-    researcher = MultiAgentResearcher(llm, os.getenv("TAVILY_API_KEY"))
-    
-    # Execute research
-    result = await researcher.research("What are the latest developments in AI agent frameworks?")
-    
-    print("Research Plan:", result["research_plan"])
-    print("Final Report:", result["final_report"])
-    print("Citations:", len(result["citations"]))
-
-if __name__ == "__main__":
-    asyncio.run(main())
-```
-
-### Running the Example
-
-```bash
-python multi_agent_researcher.py
-```
-
-## Output Structure
-
-```python
-{
-    "query": "Your research question",
-    "research_plan": "Detailed plan created by lead agent",
-    "final_report": "Comprehensive synthesized report",
-    "citations": [{"id": "cite_1", "source": "...", "relevance_score": 0.8}],
-    "num_subagents": 3,
-    "errors": [],
-    "execution_time": "2024-01-15T10:30:00"
-}
-```
-
-## Configuration
-
-Adjust system behavior by modifying parameters in the `MultiAgentResearcher` class:
-
-```python
-# Tavily search configuration
-TavilyWebSearchTool(
-    api_key=tavily_api_key,
-    max_results=5,   
+# Simple setup
+llm = ChatOpenAI(model="gpt-4o-mini", api_key="your-openai-key")
+research_system = create_general_research_system(
+    llm=llm,
+    tavily_api_key="your-tavily-key"
 )
 
-# ScrapeGraph configuration
-ScrapeGraphTool({
-    "model": "openai/gpt-4o",
-    "temperature": 0.1,  # Control randomness in extraction
-})
+# Execute research
+async def research():
+    result = await research_system.research(
+        "What are the latest developments in AI?"
+    )
+    print(result['final_report'])
+
+asyncio.run(research())
 ```
 
-## License
+### Advanced Usage with Custom Configuration
 
-MIT License - see LICENSE file for details
+```python
+from framework import (
+    MultiAgentResearchFramework,
+    GeneralResearchConfig,
+    LogLevel
+)
 
-## Acknowledgments
+# Custom configuration
+config = GeneralResearchConfig()
+research_system = MultiAgentResearchFramework(
+    llm=llm,
+    domain_config=config,
+    tavily_api_key="your-key",
+    verbose_logging=True,
+    log_file="research.log"
+)
+```
 
-Based on the multi-agent research architecture described in [Anthropic's engineering blog post](https://www.anthropic.com/engineering/built-multi-agent-research-system).
+## 📝 Examples
+
+### Run Basic Examples
+```bash
+python -m src.examples.demo
+```
+
+## 🔧 Extending the Framework
+
+### Adding New Tools
+
+```python
+# Create in src/framework/tools/your_tool.py
+from langchain_core.tools import BaseTool
+
+class YourCustomTool(BaseTool):
+    name = "your_tool"
+    description = "Tool description"
+    
+    def _run(self, input: str) -> str:
+        # Your tool implementation
+        return result
+```
+
+### Creating Custom Domains
+
+```python
+# Create in src/framework/domains/your_domain.py
+from ..core.base import BaseOrchestrator, BaseSpecialistAgent
+
+class YourOrchestrator(BaseOrchestrator):
+    def _build_system_prompt(self) -> str:
+        return "Your domain-specific orchestrator prompt"
+
+class YourSpecialist(BaseSpecialistAgent):
+    def _build_system_prompt(self) -> str:
+        return "Your domain-specific specialist prompt"
+```
