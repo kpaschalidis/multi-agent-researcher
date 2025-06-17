@@ -2,7 +2,7 @@ from .core.types import TaskComplexity, SubagentTask, DomainConfig, ResearchStat
 from .core.logging import AgentLogger, LogLevel, LogEntry, ReasoningChain
 from .core.constants import COMPLEXITY_INDICATORS, ALL_COMPLEXITY_VALUES, AGENT_CONFIGS
 from .core.base import BaseOrchestratorAgent, BaseSpecialistAgent
-from .tools import TavilyWebSearchTool, ScrapeGraphTool, CitationTool
+from .tools import TavilyWebSearchTool, CitationTool
 from .core.general import (
     GeneralResearchConfig,
     GeneralResearchOrchestrator,
@@ -29,7 +29,6 @@ __all__ = [
     "GeneralResearchOrchestrator",
     "GeneralResearchSpecialist",
     "TavilyWebSearchTool",
-    "ScrapeGraphTool",
     "CitationTool",
     "create_general_research_system",
 ]
