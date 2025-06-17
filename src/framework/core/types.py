@@ -1,0 +1,79 @@
+from typing import List, Dict, Any, TypedDict
+from dataclasses import dataclass, field
+from enum import Enum
+from .logging import AgentLogger, ReasoningChain
+
+
+class TaskComplexity(Enum):
+    """Defines the complexity levels for research tasks"""
+
+    SIMPLE = "simple"  # example: 1 agent, 3-10 tool calls
+    MODERATE = "moderate"  # example: 2-4 agents, 10-15 calls each
+    COMPLEX = "complex"  # example: 10+ agents, specialized tasks
+
+
+class ResearchState(TypedDict):
+    """State management for the research workflow"""
+
+    query: str
+    research_plan: str
+    subagent_tasks: List[Dict[str, Any]]
+    subagent_results: List[Dict[str, Any]]
+    current_step: str
+    iteration_count: int
+    final_report: str
+    citations: List[Dict[str, str]]
+    errors: List[str]
+    logger: "AgentLogger"
+    reasoning_history: List["ReasoningChain"]
+
+
+@dataclass
+class SubagentTask:
+    """Represents a task assigned to a specialist agent"""
+
+    id: str
+    objective: str
+    search_queries: List[str]
+    tools_to_use: List[str]
+    output_format: str
+    boundaries: str
+    priority: int = 1
+    status: str = "pending"
+    results: Dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class DomainConfig:
+    """Configuration for domain-specific research"""
+
+    domain_name: str
+    orchestrator_class: type
+    specialist_classes: List[type]
+    tools: List[str]
+    output_format: str
+    complexity_rules: Dict[str, Any]
+    data_sources: List[str] = field(default_factory=lambda: ["web"])
+
+    def validate(self) -> bool:
+        """Validate the domain configuration"""
+        required_fields = [
+            "domain_name",
+            "orchestrator_class",
+            "specialist_classes",
+            "tools",
+            "output_format",
+            "complexity_rules",
+        ]
+
+        for field_name in required_fields:
+            if not getattr(self, field_name):
+                raise ValueError(f"Missing required field: {field_name}")
+
+        if not self.specialist_classes:
+            raise ValueError("At least one specialist class must be provided")
+
+        if not self.tools:
+            raise ValueError("At least one tool must be specified")
+
+        return True
