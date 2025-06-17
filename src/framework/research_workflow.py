@@ -20,8 +20,9 @@ from .core.agents import (
     PublisherAgent,
 )
 from .core.logging import AgentLogger, LogLevel
-from .core.types import ResearchState, DomainConfig, SubagentTask
+from .core.types import ResearchState, ResearchConfig, SubagentTask
 from .tools import TavilyWebSearchTool, CitationTool, HybridScrapingTool
+from .core.base import ResearchAgent, ResearchLead
 
 
 class ResearchWorkflow:
@@ -30,18 +31,17 @@ class ResearchWorkflow:
     def __init__(
         self,
         llm: ChatOpenAI,
-        domain_config: DomainConfig,
+        research_config: ResearchConfig,
         tavily_api_key: str,
         verbose_logging: bool = True,
         log_file: str = None,
     ):
         self.llm = llm
-        self.domain_config = domain_config
-        self.domain_config.validate()
+        self.research_config = research_config
         self.logger = AgentLogger(verbose=verbose_logging, log_file=log_file)
         self.tools = self._create_tools(tavily_api_key)
-        self.research_lead = domain_config.research_lead_class(
-            llm, domain_config, "research_lead", self.logger
+        self.research_lead = ResearchLead(
+            llm, research_config, "research_lead", self.logger
         )
 
         self.workflow_agents = self._create_workflow_agents()
@@ -61,7 +61,7 @@ class ResearchWorkflow:
             "research_session_start",
             f"Starting research session for query: '{query}'",
             data={
-                "domain": self.domain_config.domain_name,
+                "domain": self.research_config.domain_name,
                 "formats": publication_formats,
             },
         )
@@ -141,13 +141,13 @@ class ResearchWorkflow:
         """Create tools based on domain configuration"""
         tools = []
 
-        if "web_search" in self.domain_config.tools:
+        if "web_search" in self.research_config.tools:
             tools.append(TavilyWebSearchTool(tavily_api_key))
 
-        if "scraper" in self.domain_config.tools:
+        if "scraper" in self.research_config.tools:
             tools.append(self._create_scraping_tool("hybrid"))
 
-        if "citation_extractor" in self.domain_config.tools:
+        if "citation_extractor" in self.research_config.tools:
             tools.append(CitationTool())
 
         return tools
@@ -156,22 +156,30 @@ class ResearchWorkflow:
         """Create specialized workflow agents"""
         return {
             "browser": BrowserAgent(
-                self.llm, self.tools, self.domain_config, "browser_agent", self.logger
+                self.llm, self.tools, self.research_config, "browser_agent", self.logger
             ),
             "editor": EditorAgent(
-                self.llm, self.domain_config, "editor_agent", self.logger
+                self.llm, self.research_config, "editor_agent", self.logger
             ),
             "reviewer": ReviewerAgent(
-                self.llm, self.tools, self.domain_config, "reviewer_agent", self.logger
+                self.llm,
+                self.tools,
+                self.research_config,
+                "reviewer_agent",
+                self.logger,
             ),
             "reviser": ReviserAgent(
-                self.llm, self.tools, self.domain_config, "reviser_agent", self.logger
+                self.llm, self.tools, self.research_config, "reviser_agent", self.logger
             ),
             "writer": WriterAgent(
-                self.llm, self.tools, self.domain_config, "writer_agent", self.logger
+                self.llm, self.tools, self.research_config, "writer_agent", self.logger
             ),
             "publisher": PublisherAgent(
-                self.llm, self.tools, self.domain_config, "publisher_agent", self.logger
+                self.llm,
+                self.tools,
+                self.research_config,
+                "publisher_agent",
+                self.logger,
             ),
         }
 
@@ -349,22 +357,16 @@ class ResearchWorkflow:
             state["subagent_tasks"] = analysis["subtasks"]
             print(f"✅ Generated {len(state['subagent_tasks'])} subagent tasks")
 
-        # Check domain config and agent classes
-        if not self.domain_config.research_agent_classes:
-            print("❌ No research agent classes configured!")
-            state["errors"].append("No research agent classes available")
-            state["subagent_results"] = []
-            return state
-
-        print(f"✅ Using agent class: {self.domain_config.research_agent_classes[0]}")
-
         agents = []
         for task_data in state["subagent_tasks"]:
-            agent_class = self.domain_config.research_agent_classes[0]
-            agent_id = f"agent_{task_data['id']}"
-            agent = agent_class(
-                self.llm, self.tools, self.domain_config, agent_id, self.logger
+            agent_class = ResearchAgent(
+                llm=self.llm,
+                tools=self.tools,
+                research_config=self.research_config,
+                agent_id=f"agent_{task_data['id']}",
+                logger=self.logger,
             )
+            agent = agent_class
             agents.append(agent)
 
         async def execute_single_task(task_data, agent):

@@ -1,7 +1,6 @@
 import json
 import json5
 import re
-from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 from datetime import datetime
 
@@ -9,31 +8,26 @@ from langchain_core.tools import BaseTool
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-from .types import DomainConfig, SubagentTask, TaskComplexity
+from .types import ResearchConfig, SubagentTask, TaskComplexity
 from .logging import AgentLogger, LogLevel, ReasoningChain
 from .constants import COMPLEXITY_INDICATORS, ALL_COMPLEXITY_VALUES, AGENT_CONFIGS
 
 
-class ResearchLead(ABC):
+class ResearchLead:
     """Base class for orchestrator agents that manage research workflows"""
 
     def __init__(
         self,
         llm: ChatOpenAI,
-        domain_config: DomainConfig,
+        research_config: ResearchConfig,
         agent_id: str = None,
         logger: AgentLogger = None,
     ):
         self.llm = llm
-        self.domain_config = domain_config
+        self.research_config = research_config
         self.logger = logger or AgentLogger()
-        self.agent_id = agent_id or f"orchestrator_{id(self)}"
-        self.system_prompt = self._build_system_prompt()
-
-    @abstractmethod
-    def _build_system_prompt(self) -> str:
-        """Build domain-specific system prompt"""
-        pass
+        self.agent_id = agent_id or f"research_lead_{id(self)}"
+        self.system_prompt = self.research_config.workflow_prompts.research_lead
 
     def determine_complexity(self, query: str) -> TaskComplexity:
         """Determine query complexity using domain-specific heuristics"""
@@ -46,7 +40,7 @@ class ResearchLead(ABC):
         )
 
         query_lower = query.lower()
-        rules = self.domain_config.complexity_rules
+        rules = self.research_config.complexity_rules
 
         complex_indicators = rules.get(
             "complex_indicators", COMPLEXITY_INDICATORS["complex"]
@@ -161,7 +155,7 @@ Create a research plan with exactly {num_subagents} subtasks. Provide your analy
             complexity=complexity.value,
             num_subagents=config["num_subagents"],
             max_tool_calls=config["max_tool_calls"],
-            tools=self.domain_config.tools,
+            tools=self.research_config.tools,
         )
 
         try:
@@ -260,7 +254,7 @@ Create a research plan with exactly {num_subagents} subtasks. Provide your analy
                     "search_queries": aspect["queries"][
                         :2
                     ],  # Limit to 2 queries per task
-                    "tools": self.domain_config.tools,
+                    "tools": self.research_config.tools,
                     "output_format": f"Comprehensive analysis of {aspect['aspect']}",
                     "boundaries": f"Focus specifically on {aspect['aspect']}, avoid overlap with other research areas",
                     "priority": 1 if i < 3 else 2,  # First 3 tasks high priority
@@ -313,28 +307,23 @@ Format as a professional research report with clear sections.""",
         return response.content
 
 
-class ResearchAgent(ABC):
+class ResearchAgent:
     """Base class for domain-specific research agents"""
 
     def __init__(
         self,
         llm: ChatOpenAI,
         tools: List[BaseTool],
-        domain_config: DomainConfig,
+        research_config: ResearchConfig,
         agent_id: str = None,
         logger: AgentLogger = None,
     ):
         self.llm = llm
         self.tools = {tool.name: tool for tool in tools}
-        self.domain_config = domain_config
+        self.research_config = research_config
         self.agent_id = agent_id or f"research_agent_{id(self)}"
         self.logger = logger or AgentLogger()
-        self.system_prompt = self._build_system_prompt()
-
-    @abstractmethod
-    def _build_system_prompt(self) -> str:
-        """Build domain-specific system prompt for research agent"""
-        pass
+        self.system_prompt = self.research_config.workflow_prompts.research_agent
 
     async def execute_task(self, task: SubagentTask) -> Dict[str, Any]:
         """Execute assigned research task with detailed logging"""
@@ -515,3 +504,50 @@ Focus on providing substantial, detailed content that demonstrates deep understa
             "confidence": confidence,
             "status": "completed",
         }
+
+
+def GeneralResearchConfig(domain_name: str = "general_research") -> ResearchConfig:
+    """Create configuration for general research domain"""
+    return ResearchConfig(
+        domain_name=domain_name,
+        complexity_rules={
+            "complex_indicators": [
+                "compare",
+                "analyze",
+                "comprehensive",
+                "deep dive",
+                "research",
+                "evaluate",
+                "assess",
+                "strategy",
+                "report",
+                "vs",
+                "versus",
+                "pros and cons",
+                "advantages and disadvantages",
+                "market analysis",
+            ],
+            "moderate_indicators": [
+                "latest",
+                "current",
+                "recent",
+                "trends",
+                "developments",
+                "what are",
+                "how do",
+                "list of",
+                "top",
+                "best",
+                "overview",
+            ],
+            "simple_indicators": [
+                "what is",
+                "define",
+                "explain",
+                "who is",
+                "when did",
+                "where is",
+            ],
+        },
+        data_sources=["web", "academic", "news"],
+    )

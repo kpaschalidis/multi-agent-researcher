@@ -3,6 +3,61 @@ from dataclasses import dataclass, field
 from enum import Enum
 from .logging import AgentLogger, ReasoningChain
 
+from .prompts import (
+    RESEARCH_AGENT_PROMPT,
+    RESEARCH_LEAD_PROMPT,
+    BROWSER_AGENT_PROMPT,
+    EDITOR_AGENT_PROMPT,
+    REVIEWER_AGENT_PROMPT,
+    REVISER_AGENT_PROMPT,
+    WRITER_AGENT_PROMPT,
+    PUBLISHER_AGENT_PROMPT,
+    HIGH_QUALITY_RESEARCH_CRITERIA,
+)
+
+
+@dataclass
+class WorkflowPrompts:
+    """Prompts for all workflow agents"""
+
+    browser: str = BROWSER_AGENT_PROMPT
+    editor: str = EDITOR_AGENT_PROMPT
+    research_lead: str = RESEARCH_LEAD_PROMPT
+    research_agent: str = RESEARCH_AGENT_PROMPT
+    reviewer: str = REVIEWER_AGENT_PROMPT
+    reviser: str = REVISER_AGENT_PROMPT
+    writer: str = WRITER_AGENT_PROMPT
+    publisher: str = PUBLISHER_AGENT_PROMPT
+    quality_criteria: str = HIGH_QUALITY_RESEARCH_CRITERIA
+
+
+@dataclass
+class ResearchConfig:
+    """Complete configuration for a ResearchWorkflow execution"""
+
+
+@dataclass
+class ResearchConfig:
+    domain_name: str
+    complexity_rules: Dict[str, Any]
+    data_sources: List[str]
+
+    workflow_prompts: WorkflowPrompts = field(default_factory=WorkflowPrompts)
+    research_focus: str = "comprehensive research and analysis"
+    tools: List[str] = field(
+        default_factory=lambda: ["web_search", "scraper", "citation_extractor"]
+    )
+    output_format: str = "Comprehensive Research Report"
+    target_audience: str = "Professional stakeholders"
+
+    quality_threshold: float = 0.8
+    max_revisions: int = 2
+
+    max_sources_per_task: int = 10
+    research_depth: str = (
+        "comprehensive"  # "quick", "standard", "comprehensive", "deep"
+    )
+
 
 class TaskComplexity(Enum):
     """Defines the complexity levels for research tasks"""
@@ -57,39 +112,3 @@ class SubagentTask:
     priority: int = 1
     status: str = "pending"
     results: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class DomainConfig:
-    """Configuration for domain-specific research"""
-
-    domain_name: str
-    research_lead_class: type
-    research_agent_classes: List[type]
-    tools: List[str]
-    output_format: str
-    complexity_rules: Dict[str, Any]
-    data_sources: List[str] = field(default_factory=lambda: ["web"])
-
-    def validate(self) -> bool:
-        """Validate the domain configuration"""
-        required_fields = [
-            "domain_name",
-            "research_lead_class",
-            "research_lead_class",
-            "tools",
-            "output_format",
-            "complexity_rules",
-        ]
-
-        for field_name in required_fields:
-            if not getattr(self, field_name):
-                raise ValueError(f"Missing required field: {field_name}")
-
-        if not self.research_agent_classes:
-            raise ValueError("At least one specialist class must be provided")
-
-        if not self.tools:
-            raise ValueError("At least one tool must be specified")
-
-        return True

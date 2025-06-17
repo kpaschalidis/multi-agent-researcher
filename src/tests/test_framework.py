@@ -46,34 +46,6 @@ def test_framework_availability():
         return False
 
 
-def test_module_structure():
-    """Test that module structure is correct"""
-    print("\n🧪 Testing module structure...")
-
-    try:
-        from framework.core.types import DomainConfig, SubagentTask
-        from framework.core.logging import LogEntry, ReasoningChain
-
-        print("✅ Direct core module imports work")
-
-        config = DomainConfig(
-            domain_name="test",
-            research_lead_class=str,  # Dummy class
-            research_agent_classes=[str],
-            tools=["test_tool"],
-            output_format="test format",
-            complexity_rules={"test": ["test"]},
-        )
-
-        assert config.validate() == True
-        print("✅ DomainConfig creation and validation works")
-
-        return True
-    except Exception as e:
-        print(f"❌ Module structure test failed: {e}")
-        return False
-
-
 def test_conditional_imports():
     """Test that conditional imports work correctly"""
     print("\n🧪 Testing conditional imports...")
