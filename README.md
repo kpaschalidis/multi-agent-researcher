@@ -7,7 +7,7 @@ Research system built with LangGraph and LangChain, inspired by Anthropic's [mul
 - **Multi-Agent Coordination**: Intelligent orchestrator spawns specialist agents based on query complexity
 - **Logging**: See what agents think, decide, and do in real-time
 - **Domain Specialization**: Easily extensible for different research domains
-- **Tool Integration**: Web search, intelligent scraping, and citation management
+- **Tool Integration**: Web search, scraping, citation management
 - **Synthesis**: Combines findings from multiple sources into coherent reports
 - **Citation Management**: Automatically tracks and formats source citations
 
