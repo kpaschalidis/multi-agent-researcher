@@ -145,7 +145,7 @@ class MultiAgentResearchOrchestrator:
             tools.append(TavilyWebSearchTool(tavily_api_key))
 
         if "scraper" in self.domain_config.tools:
-            tools.append(self.create_scraping_tool("hybrid"))
+            tools.append(self._create_scraping_tool("hybrid"))
 
         if "citation_extractor" in self.domain_config.tools:
             tools.append(CitationTool())
